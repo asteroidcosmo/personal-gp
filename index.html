@@ -3890,16 +3890,14 @@ Respond with this exact JSON structure:
           <summary style="cursor:pointer;font-weight:600;color:var(--primary);font-size:0.88rem">🧠 AI Enhancement Settings</summary>
           <div style="margin-top:0.75rem">
             <div class="form-group"><label>Enter Authorized Key</label>
-              <div style="display:flex;gap:0.5rem;align-items:center">
-                <input type="password" id="aiApiKey" placeholder="Paste your authorized key" value="${esc(state._apiKey)}" style="font-family:monospace;flex:1">
-                <button class="btn-primary" onclick="applyAiKey()" style="padding:0.7rem 1rem;white-space:nowrap">Apply</button>
-              </div>
+              <input type="password" id="aiApiKey" placeholder="Paste your authorized key" value="${esc(state._apiKey)}" style="font-family:monospace">
               <p style="font-size:0.75rem;color:var(--warning);margin-top:0.3rem">🔒 Don't share your key with anyone, it's your personal key.</p></div>
             <div class="form-group"><label class="toggle-row">
               <input type="checkbox" id="aiEnabled" ${aiChecked} style="width:auto;margin-right:0.5rem">
               <span>Enable AI-powered diagnosis alongside local pathways</span>
             </label>
             <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">Adds LLM-based differentials, red flag analysis, and management suggestions.</p></div>
+            <button class="btn-primary" onclick="applyAiKey()" style="width:100%;padding:0.7rem">Apply</button>
           </div>
         </details>
         <div class="btn-row"><button class="btn-primary" onclick="nextStep()">Begin consultation →</button></div>
