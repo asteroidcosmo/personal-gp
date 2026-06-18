@@ -3627,6 +3627,14 @@ Pregnancy: ${state.pregStatus || 'N/A'} | Occupation: ${state.occupation || 'N/A
 Family history: ${state.familyHistory || 'not specified'}
 Comorbidities: ${[...(state.comorbidities||[]), ...(state.customComorbidities||[])].filter(c=>c!=='None').join(', ') || 'none'}
 History details: ${JSON.stringify(state.historyAnswers || {})}
+${(() => {
+  const parts = [];
+  if (state.manualLabs && Object.keys(state.manualLabs).length) parts.push('Labs: ' + JSON.stringify(state.manualLabs));
+  if (state.pastedReportText) parts.push('Report text: ' + state.pastedReportText.slice(0, 500));
+  if (state.parsedReports?.length) parts.push('Parsed: ' + state.parsedReports.map(r => r.summary).join(' | ').slice(0, 500));
+  if (state.imageAnalysis?.summary) parts.push('Photo: ' + state.imageAnalysis.summary);
+  return parts.length ? parts.join('\n') : '';
+})()}
 
 Respond with this exact JSON structure:
 {
