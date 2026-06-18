@@ -3586,11 +3586,11 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
     /* ── Online AI functions (Gemini + OpenFDA) ── */
     async function checkOnlineStatus() {
       try {
-        const c = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=test', {method:'HEAD', signal: AbortSignal.timeout(3000)});
+        await fetch('https://models.inference.ai.azure.com', {method:'HEAD', signal: AbortSignal.timeout(3000)});
         return true;
       } catch(e) {
         try {
-          const c = await fetch('https://api.fda.gov/drug/event.json?limit=1', {method:'HEAD', signal: AbortSignal.timeout(3000)});
+          await fetch('https://api.fda.gov/drug/event.json?limit=1', {method:'HEAD', signal: AbortSignal.timeout(3000)});
           return true;
         } catch(e2) { return false; }
       }
@@ -3604,8 +3604,9 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
       try { localStorage.setItem('pgp_apiKey', state._apiKey); localStorage.setItem('pgp_aiEnabled', state._aiEnabled ? 'true' : ''); } catch(e) {}
     }
 
-    async function diagnoseWithGemini(state) {
-      const prompt = `You are Dr. Evelyn, a UK GP providing a structured medical assessment for MRCGP-level clinical reasoning. Respond with ONLY valid JSON — no markdown, no code fences, no extra text.
+    async function diagnoseWithGitHubModels(state) {
+      const systemPrompt = `You are Dr. Evelyn, a UK GP providing a structured medical assessment for MRCGP-level clinical reasoning. Always respond with ONLY valid JSON — no markdown, no code fences, no extra text.`;
+      const userPrompt = `Provide a structured assessment for this patient:
 
 Patient: ${state.age || 'unknown'} year old ${state.gender || 'unknown'}
 Complaint: "${state.complaint || 'not specified'}" for ${state.duration || 'unknown'} ${state.durationUnit || ''}
@@ -3631,26 +3632,34 @@ Respond with this exact JSON structure:
 }`;
 
       try {
-        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + state._apiKey, {
+        const res = await fetch('https://models.inference.ai.azure.com/chat/completions', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + state._apiKey
+          },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.2, maxOutputTokens: 1024, topP: 0.8 }
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.2,
+            max_tokens: 1024
           }),
-          signal: AbortSignal.timeout(15000)
+          signal: AbortSignal.timeout(20000)
         });
         if (!res.ok) {
           const errText = await res.text();
-          throw new Error('Gemini API error ' + res.status + ': ' + errText.slice(0, 200));
+          throw new Error('GitHub Models API error ' + res.status + ': ' + errText.slice(0, 200));
         }
         const data = await res.json();
-        const rawText = (data?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+        const rawText = (data?.choices?.[0]?.message?.content || '').trim();
         const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error('No JSON found in Gemini response');
+        if (!jsonMatch) throw new Error('No JSON found in model response');
         return JSON.parse(jsonMatch[0]);
       } catch (e) {
-        console.error('Gemini diagnosis failed:', e);
+        console.error('GitHub Models diagnosis failed:', e);
         throw e;
       }
     }
@@ -3873,14 +3882,14 @@ Respond with this exact JSON structure:
         <details style="margin-bottom:1rem;background:var(--surface-2);border-radius:10px;padding:0.5rem 0.75rem;border:1px solid var(--border)">
           <summary style="cursor:pointer;font-weight:600;color:var(--primary);font-size:0.88rem">🧠 AI Enhancement Settings</summary>
           <div style="margin-top:0.75rem">
-            <div class="form-group"><label>Gemini API Key <span class="optional">(free from aistudio.google.com)</span></label>
-              <input type="password" id="aiApiKey" placeholder="Paste your Gemini API key" value="${esc(state._apiKey)}" style="font-family:monospace">
-              <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">🔒 Stored locally in your browser only. Never sent anywhere except Google's Gemini API.</p></div>
+            <div class="form-group"><label>GitHub Token <span class="optional">(free — github.com/settings/tokens)</span></label>
+              <input type="password" id="aiApiKey" placeholder="Paste your GitHub token (ghp_...)" value="${esc(state._apiKey)}" style="font-family:monospace">
+              <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">🔒 Stored locally in your browser only. Create a classic token with <code>repo</code> scope at github.com/settings/tokens.</p></div>
             <div class="form-group"><label class="toggle-row">
               <input type="checkbox" id="aiEnabled" ${aiChecked} style="width:auto;margin-right:0.5rem">
-              <span>Enable AI-powered diagnosis (Gemini) alongside local pathways</span>
+              <span>Enable AI-powered diagnosis (GitHub Models) alongside local pathways</span>
             </label>
-            <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">Adds LLM-based differentials, red flag analysis, and management suggestions to the standard assessment.</p></div>
+            <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3px">Uses GPT-4o-mini via GitHub Models for differentials, red flag analysis, and management suggestions.</p></div>
           </div>
         </details>
         <div class="btn-row"><button class="btn-primary" onclick="saveAiSettings();nextStep()">Begin consultation →</button></div>
@@ -4076,8 +4085,8 @@ Respond with this exact JSON structure:
       const urgClass = (r.urgency||'routine').toLowerCase().replace(/\s+/g,'-');
       const urgColor = urgClass === 'emergency' ? 'var(--danger)' : urgClass === 'urgent' ? 'var(--warning)' : 'var(--success)';
       return `<div class="result-panel ai-panel" style="border-left:3px solid #a78bfa;background:rgba(167,139,250,0.06)">
-        <h3 style="color:#a78bfa">🧠 Gemini AI-powered assessment</h3>
-        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Generated by Google Gemini — always verify against clinical judgment.</p>
+        <h3 style="color:#a78bfa">🧠 AI-powered assessment (GPT-4o-mini)</h3>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Generated via GitHub Models — always verify against clinical judgment.</p>
         <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:0.75rem;flex-wrap:wrap">
           <span class="diagnosis-badge" style="background:rgba(167,139,250,0.15);color:#c4b5fd">${esc(r.primary)}</span>
           <span style="font-size:0.85rem;color:${urgColor};font-weight:600">${esc(r.urgency||'Routine')}</span>
@@ -4094,14 +4103,14 @@ Respond with this exact JSON structure:
     async function triggerGeminiDiagnosis() {
       const aiBtn = document.getElementById('geminiBtn');
       const aiContainer = document.getElementById('aiResultContainer');
-      if (aiBtn) { aiBtn.disabled = true; aiBtn.textContent = '🧠 Analysing with Gemini…'; }
-      if (aiContainer) aiContainer.innerHTML = '<p style="color:var(--muted);font-size:0.84rem">Contacting Gemini AI…</p>';
+      if (aiBtn) { aiBtn.disabled = true; aiBtn.textContent = '🧠 Analysing with GitHub Models…'; }
+      if (aiContainer) aiContainer.innerHTML = '<p style="color:var(--muted);font-size:0.84rem">Contacting GitHub Models API…</p>';
       try {
-        const result = await diagnoseWithGemini(state);
+        const result = await diagnoseWithGitHubModels(state);
         state.aiResult = result;
         if (aiContainer) aiContainer.innerHTML = renderAiResult(result);
       } catch (e) {
-        if (aiContainer) aiContainer.innerHTML = `<div class="red-flag" style="background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.3);color:var(--danger)"><strong>Gemini AI unavailable</strong><br>${esc(e.message || 'Check your API key and internet connection.')}</div>`;
+        if (aiContainer) aiContainer.innerHTML = `<div class="red-flag" style="background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.3);color:var(--danger)"><strong>AI unavailable</strong><br>${esc(e.message || 'Check your token and internet connection.')}</div>`;
       } finally {
         if (aiBtn) { aiBtn.disabled = false; aiBtn.textContent = '🧠 Get AI-powered second opinion'; }
       }
@@ -4146,7 +4155,7 @@ Respond with this exact JSON structure:
       const aiSection = state._aiEnabled && state._apiKey
         ? `<div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)">
             <h3 style="font-size:1rem;margin-bottom:0.75rem;color:#a78bfa">🧠 AI-powered second opinion</h3>
-            <p style="font-size:0.84rem;color:var(--muted);margin-bottom:0.75rem">Send this consultation to Gemini for an LLM-generated assessment alongside the local pathway engine.</p>
+            <p style="font-size:0.84rem;color:var(--muted);margin-bottom:0.75rem">Send this consultation to GPT-4o-mini (via GitHub Models) for an LLM-generated assessment alongside the local pathway engine.</p>
             <div id="aiResultContainer"></div>
             <button id="geminiBtn" class="btn-secondary" onclick="triggerGeminiDiagnosis()" style="border-color:#a78bfa;color:#a78bfa">🧠 Get AI-powered second opinion</button>
           </div>` : '';
