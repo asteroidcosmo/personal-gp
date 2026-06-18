@@ -165,6 +165,11 @@
     .btn-primary:hover { box-shadow: 0 6px 20px rgba(45, 212, 191, 0.4); }
     .btn-secondary { background: var(--surface-2); color: var(--primary); border: 1px solid var(--border); }
     .btn-secondary:hover { border-color: var(--primary); }
+    .btn-primary:disabled, .btn-secondary:disabled {
+      opacity: 0.5; cursor: not-allowed; box-shadow: none;
+    }
+    .btn-primary:disabled:hover { box-shadow: none; }
+    .btn-secondary:disabled:hover { border-color: var(--border); }
     .disclaimer {
       background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.3);
       border-radius: 10px; padding: 0.95rem; font-size: 0.84rem; color: #fcd34d; margin-bottom: 1.25rem;
@@ -216,6 +221,26 @@
     .safety-net {
       background: rgba(45, 212, 191, 0.06); border: 1px solid rgba(45, 212, 191, 0.2);
       border-radius: 10px; padding: 0.95rem; margin-top: 0.85rem; font-size: 0.86rem;
+    }
+    .high-risk-emergency {
+      background: rgba(220, 38, 38, 0.12); border: 2px solid rgba(220, 38, 38, 0.6);
+      border-radius: 10px; padding: 0.95rem; margin: 0.85rem 0; font-size: 0.86rem;
+    }
+    .high-risk-serious {
+      background: rgba(251, 191, 36, 0.10); border: 1px solid rgba(251, 191, 36, 0.5);
+      border-radius: 10px; padding: 0.85rem; margin: 0.7rem 0; font-size: 0.84rem;
+    }
+    .high-risk-oncological {
+      background: rgba(147, 51, 234, 0.10); border: 1px solid rgba(147, 51, 234, 0.4);
+      border-radius: 10px; padding: 0.85rem; margin: 0.7rem 0; font-size: 0.84rem;
+    }
+    .high-risk-item {
+      padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .high-risk-item:last-child { border-bottom: none; }
+    .high-risk-action {
+      font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; padding-left: 0.5rem;
+      border-left: 2px solid var(--border);
     }
     .guideline-ref { font-size: 0.76rem; color: var(--muted); margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--border); }
     .confidence { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 0.45rem 0; }
@@ -437,7 +462,7 @@ window.GP_PATHWAYS = {
   },
 
   cellulitis: {
-    category: 'Dermatology / Infectious', keywords: ['cellulitis', 'red leg', 'hot swollen', 'skin infection', 'spreading redness', 'infected wound', 'leg redness'],
+    category: 'Dermatology / Infectious', keywords: ['cellulitis', 'red leg', 'hot swollen', 'skin infection', 'spreading redness', 'infected wound', 'leg redness', 'red hot leg', 'leg infection', 'fever leg', 'red swollen leg', 'warm leg', 'red hot', 'leg red', 'pain out of proportion'],
     imageRelevant: true,
     questions: [
       { id: 'spread', text: 'Is redness spreading over hours/days?', type: 'radio', options: ['Yes — spreading', 'Stable', 'Improving'] },
@@ -516,7 +541,7 @@ window.GP_PATHWAYS = {
   },
 
   acne: {
-    category: 'Dermatology', keywords: ['acne', 'spots', 'pimples', 'blackheads', 'cystic acne', 'facial spots'],
+    category: 'Dermatology', keywords: ['acne', 'pimples', 'blackheads', 'cystic acne', 'facial spots'],
     imageRelevant: true,
     questions: [
       { id: 'severity', text: 'Severity?', type: 'radio', options: ['Mild — comedones mainly', 'Moderate — papules/pustules', 'Severe — nodules/scarring'] },
@@ -578,7 +603,7 @@ window.GP_PATHWAYS = {
 
   // ─── RESPIRATORY ───
   urti: {
-    category: 'Respiratory', keywords: ['cough', 'cold', 'sore throat', 'runny nose', 'blocked nose', 'flu', 'catarrh', 'congestion', 'fever', 'sneezing', 'mucus', 'phlegm', 'chesty', 'sniffles', 'sinus', 'sinus congestion', 'sinus headache', 'head cold'],
+    category: 'Respiratory', keywords: ['cough', 'cold', 'sore throat', 'runny nose', 'blocked nose', 'flu', 'catarrh', 'congestion', 'sneezing', 'mucus', 'phlegm', 'chesty', 'sniffles', 'sinus', 'sinus congestion', 'sinus headache', 'head cold'],
     questions: [
       { id: 'fever', text: 'Fever >37.8°C?', type: 'radio', options: ['Yes', 'No', 'Not measured'] },
       { id: 'breathless', text: 'Breathless at rest or unable to complete sentences?', type: 'radio', options: ['Yes', 'No'] },
@@ -603,7 +628,7 @@ window.GP_PATHWAYS = {
   },
 
   asthma_exac: {
-    category: 'Respiratory', keywords: ['asthma', 'wheeze', 'wheezing', 'tight chest', 'inhaler not helping', 'peak flow down'],
+    category: 'Respiratory', keywords: ['asthma', 'wheeze', 'wheezing', 'tight chest', 'inhaler not helping', 'peak flow down', 'breathless', 'cough', 'cant breathe'],
     questions: [
       { id: 'sob', text: 'Short of breath at rest?', type: 'radio', options: ['Yes', 'On exertion only', 'No'] },
       { id: 'speak', text: 'Able to speak in full sentences?', type: 'radio', options: ['Yes', 'No — phrases only', 'No — words only'] },
@@ -723,7 +748,7 @@ window.GP_PATHWAYS = {
   },
 
   af: {
-    category: 'Cardiovascular', keywords: ['palpitation', 'irregular heartbeat', 'atrial fibrillation', 'af', 'heart racing irregular', 'racing heart', 'heart racing', 'fluttering heart', 'fluttering'],
+    category: 'Cardiovascular', keywords: ['palpitation', 'irregular heartbeat', 'atrial fibrillation', 'afib', 'heart racing irregular', 'racing heart', 'heart racing', 'fluttering heart', 'fluttering'],
     questions: [
       { id: 'onset', text: 'Sudden onset palpitations?', type: 'radio', options: ['Yes', 'Gradual', 'Intermittent'] },
       { id: 'chest', text: 'Chest pain or syncope?', type: 'radio', options: ['Yes', 'No'] },
@@ -746,7 +771,7 @@ window.GP_PATHWAYS = {
   },
 
   chest_pain: {
-    category: 'Cardiovascular', priority: 'emergency', keywords: ['chest pain', 'chest tightness', 'crushing chest', 'pain left arm', 'heart pain', 'radiat', 'left arm'],
+    category: 'Cardiovascular', priority: 'emergency', keywords: ['chest pain', 'chest tightness', 'crushing chest', 'pain left arm', 'heart pain', 'radiat', 'left arm', 'coughing blood', 'haemoptysis', 'sudden breathless', 'short of breath', 'pleuritic', 'coughing up blood'],
     questions: [
       { id: 'character', text: 'Pain character?', type: 'radio', options: ['Heavy/pressure central', 'Sharp pleuritic', 'Burning', 'Musculoskeletal'] },
       { id: 'radiation', text: 'Radiates to jaw/arm/back?', type: 'radio', options: ['Yes', 'No'] },
@@ -779,7 +804,7 @@ window.GP_PATHWAYS = {
   },
 
   dvt: {
-    category: 'Cardiovascular / Emergency', priority: 'emergency', keywords: ['swollen leg', 'calf pain', 'leg swelling', 'deep vein', 'dvt', 'red hot leg', 'one leg swollen', 'unilateral leg swelling', 'leg swollen', 'painful calf', 'leg painful', 'leg ache', 'leg pain'],
+    category: 'Cardiovascular / Emergency', priority: 'emergency', keywords: ['swollen leg', 'calf pain', 'leg swelling', 'deep vein', 'dvt', 'red hot leg', 'one leg swollen', 'unilateral leg swelling', 'leg swollen', 'painful calf', 'leg painful', 'leg ache', 'leg pain', 'calf tender', 'leg tender', 'swollen left leg', 'swollen right leg', 'long flight', 'prolonged sitting', 'leg cramp', 'dvt symptoms'],
     questions: [
       { id: 'unilateral', text: 'One leg swollen or both?', type: 'radio', options: ['One leg only', 'Both legs', 'Not sure'] },
       { id: 'calf', text: 'Calf pain or tenderness?', type: 'radio', options: ['Yes', 'No'] },
@@ -982,7 +1007,7 @@ window.GP_PATHWAYS = {
   },
 
   pregnancy: {
-    category: 'Obstetrics / Women\'s Health', keywords: ['pregnant', 'pregnancy test positive', 'missed period', 'morning sick', 'nausea pregnant', 'bleeding pregnant', 'pregnancy pain'],
+    category: 'Obstetrics / Women\'s Health', keywords: ['pregnant', 'pregnancy test positive', 'missed period', 'morning sick', 'nausea pregnant', 'bleeding pregnant', 'pregnancy pain', 'preeclampsia', 'eclampsia', 'headache pregnant', 'vision pregnant', 'swelling pregnant', 'blurred vision pregnant', 'high blood pregnant', 'protein urine pregnant', 'fit pregnant', 'seizure pregnant', 'weeks pregnant'],
     questions: [
       { id: 'gestation', text: 'How far along do you think?', type: 'radio', options: ['<12 weeks', '12–24 weeks', '>24 weeks', 'Not sure'] },
       { id: 'bleeding', text: 'Any vaginal bleeding?', type: 'radio', options: ['Yes — spotting only', 'Yes — heavy bleeding', 'No'] },
@@ -1131,7 +1156,7 @@ window.GP_PATHWAYS = {
 
   // ─── NEUROLOGY ───
   headache: {
-    category: 'Neurology', keywords: ['headache', 'head pain', 'throbbing head', 'throbbing', 'pounding', 'tension headache', 'head hurting', 'head hurts'],
+    category: 'Neurology', keywords: ['headache', 'head pain', 'throbbing head', 'throbbing', 'pounding', 'tension headache', 'head hurting', 'head hurts', 'band like', 'pressure head', 'temple pain', 'temple tender', 'scalp tender'],
     questions: [
       { id: 'thunder', text: 'Sudden worst-ever headache (seconds)?', type: 'radio', options: ['Yes', 'No'] },
       { id: 'meningism', text: 'Fever, stiff neck, or non-blanching rash?', type: 'radio', options: ['Yes', 'No'] },
@@ -1156,7 +1181,7 @@ window.GP_PATHWAYS = {
 
   // ─── ENDOCRINE ───
   diabetes: {
-    category: 'Endocrine / Metabolic', keywords: ['diabetes', 'high sugar', 'polyuria thirst', 'hba1c', 'hypoglycaemia', 'hypo', 'thirsty', 'frequent urine', 'frequent urination', 'blurry vision', 'blurred vision', 'weight loss', 'tingling feet'],
+    category: 'Endocrine / Metabolic', keywords: ['diabetes', 'high sugar', 'polyuria thirst', 'hba1c', 'hypoglycaemia', 'hypo', 'thirsty', 'frequent urine', 'frequent urination', 'blurry vision', 'blurred vision', 'weight loss', 'tingling feet', 'tingling', 'numbness feet', 'numb feet'],
     questions: [
       { id: 'type', text: 'Known diabetes type?', type: 'radio', options: ['Type 1', 'Type 2', 'Not diagnosed — suspected', 'Hypo episode'] },
       { id: 'symptoms', text: 'Current symptoms?', type: 'radio', options: ['Thirst/polyuria', 'Hypo symptoms (sweat/shake)', 'Hyperglycaemia', 'Routine review'] },
@@ -1183,7 +1208,7 @@ window.GP_PATHWAYS = {
   },
 
   thyroid: {
-    category: 'Endocrine', keywords: ['thyroid', 'hypothyroid', 'hyperthyroid', 'tired cold', 'weight gain thyroid', 'palpitations weight loss', 'fatigue', 'tired', 'hair loss', 'hair thinning', 'dry skin', 'constipation', 'constipated', 'cold intolerance', 'weight gain', 'feeling cold', 'always cold'],
+    category: 'Endocrine', keywords: ['thyroid', 'hypothyroid', 'hyperthyroid', 'tired cold', 'weight gain thyroid', 'palpitations weight loss', 'fatigue', 'tired', 'hair loss', 'hair thinning', 'dry skin', 'cold intolerance', 'weight gain', 'feeling cold', 'always cold'],
     questions: [
       { id: 'direction', text: 'Symptoms suggest?', type: 'radio', options: ['Underactive (tired, cold, weight gain)', 'Overactive (palpitations, weight loss, heat)', 'Thyroid lump', 'Not sure'] },
       { id: 'duration', text: 'Duration of symptoms?', type: 'radio', options: ['Weeks', 'Months', 'Years'] }
@@ -1319,7 +1344,7 @@ window.GP_PATHWAYS = {
 
   // ─── STROKE / TIA ───
   stroke_tia: {
-    category: 'Neurology / Emergency', priority: 'emergency', keywords: ['stroke', 'tia', 'mini stroke', 'face droop', 'slurred speech', 'arm weakness', 'one sided weakness', 'sudden weakness', 'facial weakness', 'fast test'],
+    category: 'Neurology / Emergency', priority: 'emergency', keywords: ['stroke', 'tia', 'mini stroke', 'face droop', 'slurred speech', 'arm weakness', 'one sided weakness', 'sudden weakness', 'facial weakness', 'fast test', 'vision loss', 'vision black', 'transient vision loss', 'blind', 'went blind', 'amaurosis fugax', 'vision went black', 'temporary blind', 'temporary vision loss', 'transient vision', 'came back', 'vision returned'],
     questions: [
       { id: 'fast_face', text: 'Has the FACE fallen on one side (smile uneven)?', type: 'radio', options: ['Yes', 'No'] },
       { id: 'fast_arm', text: 'Can they raise BOTH ARMS and keep them there?', type: 'radio', options: ['Yes', 'No \u2014 one drifts'] },
@@ -1356,7 +1381,7 @@ window.GP_PATHWAYS = {
 
   // ─── SEPSIS RECOGNITION ───
   sepsis: {
-    category: 'Emergency / Infectious', priority: 'emergency', keywords: ['sepsis', 'septic', 'feeling very unwell', 'rigors', 'confusion', 'tachycardia', 'fever unwell', 'infection spreading', 'spreading infection', 'feeling like dying', 'rapidly worsening'],
+    category: 'Emergency / Infectious', priority: 'emergency', keywords: ['sepsis', 'septic', 'feeling very unwell', 'rigors', 'confusion', 'tachycardia', 'fever unwell', 'infection spreading', 'spreading infection', 'feeling like dying', 'rapidly worsening', 'non blanching rash', 'rash not fading', 'rash pressed', 'meningococcal', 'meningitis', 'doesnt fade', 'doesnt go away', 'when pressed', 'glass test', 'rash not going', 'neonatal', 'child fever', 'fever child', 'fever baby'],
     questions: [
       { id: 'temp', text: 'Temperature measured?', type: 'radio', options: ['<36\u00b0C', '36\u201337.5\u00b0C', '>38\u00b0C', 'Not measured'] },
       { id: 'rr', text: 'Respiratory rate (breaths/min)?', type: 'radio', options: ['<20', '20\u201324', '\u226525'] },
@@ -1429,7 +1454,7 @@ window.GP_PATHWAYS = {
 
   // ─── MIGRAINE DETAILED ───
   migraine: {
-    category: 'Neurology', keywords: ['migraine', 'headache one side', 'aura', 'photophobia migraine', 'nausea headache', 'flashing', 'photophobia', 'headache', 'throbbing', 'nausea', 'vomiting', 'light sensitivity', 'pulsating', 'nausea vomiting', 'vomiting nausea'],
+    category: 'Neurology', keywords: ['migraine', 'headache one side', 'aura', 'photophobia migraine', 'nausea headache', 'flashing', 'photophobia', 'headache', 'throbbing', 'light sensitivity', 'pulsating', 'nausea vomiting', 'vomiting nausea'],
     questions: [
       { id: 'unilateral', text: 'Unilateral (one-sided) pain?', type: 'radio', options: ['Yes', 'No', 'Sometimes'] },
       { id: 'quality', text: 'Pain quality?', type: 'radio', options: ['Throbbing/pulsating', 'Pressure/tightening', 'Stabbing'] },
@@ -1676,7 +1701,7 @@ window.GP_PATHWAYS = {
 
   // ─── ALLERGIC RHINITIS ───
   allergic_rhinitis: {
-    category: 'Respiratory / Allergy', keywords: ['hay fever', 'allergic rhinitis', 'seasonal allergy', 'sneezing', 'runny nose', 'itchy eyes', 'watery eyes', 'pollen', 'allergy nose', 'nasal allergy', 'blocked nose allergy'],
+    category: 'Respiratory / Allergy', keywords: ['hay fever', 'allergic rhinitis', 'seasonal allergy', 'seasonal allergies', 'sneezing', 'runny nose', 'itchy eyes', 'watery eyes', 'pollen', 'allergy nose', 'nasal allergy', 'blocked nose allergy', 'allergies'],
     imageRelevant: false,
     questions: [
       { id: 'pattern', text: 'When does it occur?', type: 'radio', options: ['Seasonal (spring/summer)', 'Perennial (year-round)', 'Triggered by specific allergen'] },
@@ -1919,7 +1944,7 @@ window.GP_PATHWAYS = {
 
 /* Clinical urgency tiers: lower = more urgent (0=emergency, 1=urgent, 2=prompt, 3=routine) */
 const URGENCY_TIER = {
-  chest_pain: 0, anaphylaxis: 0, sepsis: 0, stroke_tia: 0,
+  chest_pain: 0, anaphylaxis: 0, sepsis: 0, stroke_tia: 0, pregnancy: 0,
   pneumonia: 1, asthma_exac: 1, dvt: 1, dengue: 1, tuberculosis: 1,
   cellulitis: 2, uti: 2, sti: 2, hepatitis: 2, typhoid: 2, malaria: 2, copd_exac: 2, meningitis: 2,
   otitis: 2, headache: 2, migraine: 2, falls: 2, thyroid: 2, cold_sore: 3,
@@ -2104,8 +2129,8 @@ window.GP_REFERRAL_RULES = {
   'use strict';
 
   const SYNONYMS = {
-    urin: ['urine', 'urinary', 'bladder', 'pee', 'dysuria', 'frequency'],
-    rash: ['skin', 'eruption', 'spots', 'lesion', 'dermatitis', 'eczema', 'hives'],
+    urin: ['urine', 'urinary', 'bladder', 'pee', 'peeing', 'wee', 'weeing', 'dysuria', 'frequency'],
+    rash: ['skin', 'eruption', 'lesion', 'dermatitis', 'eczema', 'hives'],
     pain: ['ache', 'hurt', 'sore', 'tender', 'discomfort'],
     breathless: ['short of breath', 'sob', 'dyspnoea', 'cant breathe', 'wheezing'],
     depressed: ['low mood', 'sad', 'hopeless', 'unhappy', 'miserable'],
@@ -2114,7 +2139,7 @@ window.GP_REFERRAL_RULES = {
     chest: ['cardiac', 'heart', 'angina', 'mi'],
     stomach: ['abdominal', 'tummy', 'belly', 'gut', 'nausea', 'vomit', 'sick', 'queasy'],
     back: ['spine', 'lumbar', 'sciatica', 'slipped disc'],
-    eye: ['vision', 'conjunctivitis', 'red eye', 'ophthalm'],
+    eye: ['ophthalm'],
     ear: ['otitis', 'earache', 'hearing'],
     anxiety: ['panic', 'worry', 'nervous', 'stress'],
     diabetes: ['sugar', 'glucose', 'hypo', 'hyperglycaemia', 'hba1c'],
@@ -3294,6 +3319,7 @@ window.GP_REFERRAL_RULES = {
       this.drugChecker = new DrugInteractionChecker();
       this.etiologyEngine = new DrugEtiologyEngine();
       this.referralEngine = new ReferralEngine();
+      this.highRiskSafetyNet = new HighRiskSafetyNet();
       this.reasoningChain = [];
     }
 
@@ -3465,7 +3491,7 @@ window.GP_REFERRAL_RULES = {
       return dx;
     }
 
-    buildReasoningChain(state, pathwayKey, scores, imageAnalysis, parsedReports, diagnosis) {
+    buildReasoningChain(state, pathwayKey, scores, imageAnalysis, parsedReports, diagnosis, highRisk) {
       const chain = [];
       chain.push({ step: 'Parse', text: `Analysing presenting complaint: "${state.complaint.slice(0, 80)}${state.complaint.length > 80 ? '…' : ''}"` });
       chain.push({ step: 'Expand', text: `Expanded clinical terms via synonym thesaurus; matched ${scores.length || 1} potential pathway(s) from MRCGP-aligned curriculum database.` });
@@ -3495,6 +3521,12 @@ window.GP_REFERRAL_RULES = {
       chain.push({ step: 'History', text: 'Cross-correlated focused history answers with red-flag screening (NICE CKS / NG pathways).' });
       chain.push({ step: 'Interact', text: 'Ran DrugInteractionChecker against MRCGP/BNF/STOPP-START rules \u2014 allergies, pregnancy, renal/hepatic, age, anticoagulation, driving.' });
       chain.push({ step: 'Infer', text: `Working diagnosis: ${diagnosis.primary} (${diagnosis.confidence}% confidence). Differentials considered: ${(diagnosis.differentials || []).slice(0, 5).join(', ')}.` });
+      const totalHighRisk = (highRisk?.emergencyConditions?.length || 0) + (highRisk?.seriousConditions?.length || 0) + (highRisk?.oncologicalConditions?.length || 0);
+      if (totalHighRisk > 0) {
+        chain.push({ step: 'SafetyNet', text: `High-risk safety net screened ${Object.keys(this.highRiskSafetyNet.registry).length} conditions - ${totalHighRisk} condition(s) flagged for exclusion: ${[...(highRisk.emergencyConditions || []), ...(highRisk.seriousConditions || []), ...(highRisk.oncologicalConditions || [])].map(c => c.condition).join(', ')}.` });
+      } else {
+        chain.push({ step: 'SafetyNet', text: `High-risk safety net screened ${Object.keys(this.highRiskSafetyNet.registry).length} conditions - no high-risk pattern matched your presenting complaint.` });
+      }
       chain.push({ step: 'Safeguard', text: 'Applied GMC Good Medical Practice principles: safety-netting, red-flag detection, and appropriate referral thresholds.' });
       return chain;
     }
@@ -3527,9 +3559,12 @@ window.GP_REFERRAL_RULES = {
       };
       const referrals = this.referralEngine.evaluate(pathwayKey, state.historyAnswers || {}, diagnosis, ctx);
 
-      const chain = this.buildReasoningChain(state, pathwayKey, scores, state.imageAnalysis, parsedReports, diagnosis);
+      const highRisk = this.highRiskSafetyNet.evaluate(state.complaint, state.age, state.gender, state.historyAnswers || {});
+
+      const chain = this.buildReasoningChain(state, pathwayKey, scores, state.imageAnalysis, parsedReports, diagnosis, highRisk);
 
       return {
+        highRisk,
         pathwayKey,
         pathway,
         scores,
@@ -3548,12 +3583,233 @@ window.GP_REFERRAL_RULES = {
     }
   }
 
+  class HighRiskSafetyNet {
+    constructor() {
+      this.registry = {
+        retinal_detachment: {
+          condition: 'Retinal detachment', urgency: 'emergency',
+          patterns: ['float', 'dark spot', 'curtain over vision', 'shadow in vision', 'cobweb in vision', 'sudden vision loss', 'flashes of light', 'streak of light', 'photopsia'],
+          context: { ageMin: 40 }, guards: ['both eyes', 'lifelong', 'since childhood', 'years'],
+          action: 'Same-day ophthalmology — dilated fundus exam. If confirmed, surgical repair within 24 hours.'
+        },
+        posterior_vitreous_detachment: {
+          condition: 'Posterior vitreous detachment (PVD)', urgency: 'serious',
+          patterns: ['float', 'dark spot', 'cobweb in vision', 'strand in vision', 'ring floater'],
+          context: { ageMin: 45 }, guards: ['both eyes', 'lifelong', 'since childhood'],
+          action: 'Urgent ophthalmology review within 1 week — dilated fundus exam to exclude retinal tear. Return if flashes or curtain develop.'
+        },
+        acute_angle_closure_glaucoma: {
+          condition: 'Acute angle-closure glaucoma', urgency: 'emergency',
+          patterns: ['severe eye pain', 'halos around lights', 'rainbow rings', 'fixed pupil', 'cloudy cornea', 'red eye with nausea'],
+          context: { ageMin: 40 }, guards: ['conjunctival discharge', 'itchy eyes'],
+          action: 'Immediate ophthalmology — IOP measurement. If confirmed, urgent laser iridotomy.'
+        },
+        giant_cell_arteritis: {
+          condition: 'Giant cell arteritis (GCA)', urgency: 'emergency',
+          patterns: ['temple pain', 'scalp tenderness', 'jaw claudication', 'pain combing hair', 'headache with vision loss'],
+          context: { ageMin: 50 }, guards: [],
+          action: 'Immediate high-dose prednisolone 40-60 mg OD and same-day ophthalmology/rheumatology. Temporal artery biopsy within 1 week.'
+        },
+        retinal_artery_occlusion: {
+          condition: 'Retinal artery occlusion', urgency: 'emergency',
+          patterns: ['sudden painless vision loss', 'vision black', 'vision dark', 'cannot see one eye', 'curtain over vision painless'],
+          context: { ageMin: 50 }, guards: ['headache', 'eye pain', 'red eye'],
+          action: 'Emergency ophthalmology — ocular massage, anterior chamber paracentesis if IOP elevated. Urgent stroke workup.'
+        },
+        stroke: {
+          condition: 'Stroke (ischaemic / haemorrhagic)', urgency: 'emergency',
+          patterns: ['facial droop', 'arm weakness', 'speech difficulty', 'slurred speech', 'one sided weakness', 'numbness one side', 'sudden confusion', 'gait disturbance sudden', 'vertigo sudden', 'ataxia'],
+          context: { ageMin: 45 }, guards: ['gradual onset over days'],
+          action: 'Immediate 1122 — FAST positive. If within 4.5 hours, thrombectomy centre candidate.'
+        },
+        transient_ischaemic_attack: {
+          condition: 'Transient ischaemic attack (TIA)', urgency: 'emergency',
+          patterns: ['transient vision loss', 'amaurosis fugax', 'temporary weakness', 'temporary slurred speech', 'brief numbness', 'shadow in vision passed', 'curtain came and went', 'vision went black came back'],
+          context: { ageMin: 45 }, guards: ['migraine with headache'],
+          action: 'Same-day TIA clinic or admission if ABCD2 ≥4. Aspirin 300 mg stat if not haemorrhagic. Carotid imaging within 24h.'
+        },
+        meningitis: {
+          condition: 'Meningitis / meningococcal disease', urgency: 'emergency',
+          patterns: ['fever with stiff neck', 'photophobia', 'headache severe', 'neck stiffness', 'non-blanching rash', 'purpuric rash', 'petechial rash'],
+          context: {}, guards: ['chronic headache'],
+          action: 'Immediate 1122 — IV antibiotics (ceftriaxone) + dexamethasone within 1 hour.'
+        },
+        subarachnoid_haemorrhage: {
+          condition: 'Subarachnoid haemorrhage (SAH)', urgency: 'emergency',
+          patterns: ['thunderclap headache', 'worst headache of life', 'sudden severe headache', 'headache with neck stiffness'],
+          context: { ageMin: 30 }, guards: ['gradual onset', 'chronic recurrent'],
+          action: 'Immediate 1122 — CT head within 1 hour. LP if CT negative but high suspicion.'
+        },
+        acute_coronary_syndrome: {
+          condition: 'Acute coronary syndrome (STEMI / NSTEMI)', urgency: 'emergency',
+          patterns: ['heavy chest', 'crushing chest', 'chest tightness', 'central chest pain', 'chest pain radiating arm', 'chest pain radiating jaw', 'chest pain with nausea', 'chest pain with sweat', 'chest pain with breathlessness', 'exertional chest', 'indigestion with exertion'],
+          context: { ageMin: 35 }, guards: ['sharp stabbing localized pain', 'chest wall tenderness'],
+          action: 'Immediate 1122 — aspirin 300 mg stat, GTN spray, pre-hospital ECG.'
+        },
+        aortic_dissection: {
+          condition: 'Aortic dissection', urgency: 'emergency',
+          patterns: ['tearing chest pain', 'ripping chest pain', 'chest pain radiating to back', 'severe chest pain between shoulder blades', 'pain migrating', 'pulse deficit'],
+          context: { ageMin: 45 }, guards: [],
+          action: 'Immediate 1122 — CT aortogram. IV beta-blocker. Surgical repair if Type A.'
+        },
+        pulmonary_embolism: {
+          condition: 'Pulmonary embolism (PE)', urgency: 'emergency',
+          patterns: ['sudden breathlessness', 'pleuritic chest pain', 'haemoptysis', 'chest pain sharp breathing', 'unilateral leg swelling', 'calf pain', 'DVT symptoms', 'syncope with breathlessness'],
+          context: {}, guards: ['gradual breathlessness over weeks'],
+          action: 'Immediate 1122 if unstable. CTPA or V/Q. LMWH or DOAC.'
+        },
+        severe_pneumonia: {
+          condition: 'Severe pneumonia — sepsis risk', urgency: 'serious',
+          patterns: ['cough with fever', 'breathlessness with cough', 'rusty sputum', 'high fever', 'rigors', 'pleuritic pain'],
+          context: { ageMin: 60 }, guards: [],
+          action: 'CURB-65 score. If ≥2: hospital referral. Antibiotics within 4 hours.'
+        },
+        tension_pneumothorax: {
+          condition: 'Tension pneumothorax', urgency: 'emergency',
+          patterns: ['sudden severe breathlessness', 'sharp chest pain sudden', 'tracheal deviation'],
+          context: {}, guards: [],
+          action: 'Immediate 1122 — needle decompression second intercostal space.'
+        },
+        sepsis: {
+          condition: 'Sepsis / septic shock', urgency: 'emergency',
+          patterns: ['fever with confusion', 'rapid deterioration', 'cold peripheries', 'mottled skin', 'oliguria', 'tachypnoea', 'tachycardia unexplained', 'hypotension', 'not passing urine', 'breathlessness with fever', 'feeling severely unwell'],
+          context: {}, guards: [],
+          action: 'Immediate 1122 — Sepsis 6 within 1 hour: oxygen, blood cultures, IV antibiotics, IV fluids, lactate.'
+        },
+        meningococcal_septicaemia: {
+          condition: 'Meningococcal septicaemia', urgency: 'emergency',
+          patterns: ['non-blanching rash', 'purpuric rash', 'petechiae with fever', 'rash appears with fever', 'rapidly progressive rash'],
+          context: {}, guards: [],
+          action: 'Immediate 1122 — IV ceftriaxone stat. Notify public health.'
+        },
+        necrotising_fasciitis: {
+          condition: 'Necrotising fasciitis', urgency: 'emergency',
+          patterns: ['severe pain out of proportion', 'pain much worse', 'rapidly spreading redness', 'blistering skin', 'crepitus', 'skin discoloration dark', 'fever with skin infection'],
+          context: {}, guards: [],
+          action: 'Immediate 1122 — urgent surgical debridement. IV broad-spectrum antibiotics.'
+        },
+        cauda_equina_syndrome: {
+          condition: 'Cauda equina syndrome', urgency: 'emergency',
+          patterns: ['saddle anaesthesia', 'saddle numbness', 'urinary retention', 'faecal incontinence', 'loss of anal tone', 'bilateral leg weakness sudden'],
+          context: {}, guards: [],
+          action: 'Immediate 1122 — emergency MRI. Surgical decompression within 24-48h.'
+        },
+        acute_appendicitis: {
+          condition: 'Acute appendicitis', urgency: 'serious',
+          patterns: ['right lower quadrant pain', 'pain moving to right side', 'rif pain', 'pain migrated to right', 'periumbilical pain migrating'],
+          context: {}, guards: ['generalised abdominal pain without migration'],
+          action: 'Same-day surgical assessment. Ultrasound or CT if equivocal.'
+        },
+        bowel_obstruction: {
+          condition: 'Bowel obstruction', urgency: 'emergency',
+          patterns: ['abdominal distension', 'absolute constipation', 'not opening bowels', 'not passing flatus', 'colicky abdominal pain', 'vomiting faeculent'],
+          context: {}, guards: ['diarrhoea', 'loose stools'],
+          action: 'Immediate surgical assessment — erect CXR and AXR. NG tube and IV fluids.'
+        },
+        ruptured_ectopic_pregnancy: {
+          condition: 'Ruptured ectopic pregnancy', urgency: 'emergency',
+          patterns: ['abdominal pain pregnant', 'vaginal bleeding pregnant', 'shoulder tip pain', 'collapse pregnant', 'syncope early pregnancy', 'lower abdominal pain one side pregnant', 'missed period with pain'],
+          context: { pregRequired: true }, guards: [],
+          action: 'Immediate 1122 — IV access, cross-match. Urgent gynaecology review.'
+        },
+        acute_pancreatitis: {
+          condition: 'Acute pancreatitis', urgency: 'serious',
+          patterns: ['severe epigastric pain radiating to back', 'epigastric pain severe', 'pain eased leaning forward', 'upper belly pain going through back'],
+          context: {}, guards: [],
+          action: 'Urgent hospital admission. Lipase/amylase. IV fluids, analgesia.'
+        },
+        abdominal_aortic_aneurysm: {
+          condition: 'Ruptured abdominal aortic aneurysm', urgency: 'emergency',
+          patterns: ['severe abdominal pain radiating to back', 'pulsatile abdominal mass', 'collapse with abdominal pain', 'syncope with abdominal pain', 'pain going through to back', 'pain through to back'],
+          context: { ageMin: 55 }, guards: [],
+          action: 'Immediate 1122 — emergency surgical repair if ruptured.'
+        },
+        diabetic_ketoacidosis: {
+          condition: 'Diabetic ketoacidosis (DKA)', urgency: 'emergency',
+          patterns: ['vomiting with diabetes', 'abdominal pain with diabetes', 'fruity breath', 'deep rapid breathing', 'confusion with diabetes', 'drowsy with diabetes', 'high blood sugar sick', 'type 1 diabetes vomiting'],
+          context: {}, guards: [],
+          action: 'Immediate 1122 — IV fluids, IV insulin, potassium monitoring. DKA protocol.'
+        },
+        pre_eclampsia: {
+          condition: 'Pre-eclampsia / Eclampsia', urgency: 'emergency',
+          patterns: ['headache pregnant', 'blurred vision pregnant', 'visual disturbance pregnant', 'epigastric pain pregnant', 'right upper quadrant pain pregnant', 'seizure pregnant'],
+          context: { pregRequired: true }, guards: [],
+          action: 'Urgent maternity assessment. BP, urinalysis, bloods. If severe: IV labetalol, magnesium sulphate.'
+        },
+        diabetic_hyperosmolar: {
+          condition: 'Hyperosmolar hyperglycaemic state (HHS)', urgency: 'emergency',
+          patterns: ['confusion with high sugar', 'severe dehydration', 'extreme thirst', 'drowsy with high sugar'],
+          context: {}, guards: [],
+          action: 'Immediate 1122 — aggressive IV fluids, insulin with caution, thromboprophylaxis.'
+        },
+        mesenteric_ischaemia: {
+          condition: 'Acute mesenteric ischaemia', urgency: 'emergency',
+          patterns: ['severe abdominal pain out of proportion', 'abdominal pain after eating', 'bloody diarrhoea', 'atrial fibrillation with abdominal pain'],
+          context: { ageMin: 55 }, guards: [],
+          action: 'Immediate 1122 — CT angiogram. Laparotomy if infarcted bowel.'
+        },
+        ectopic_pregnancy_suspected: {
+          condition: 'Ectopic pregnancy (suspected)', urgency: 'urgent',
+          patterns: ['missed period with pain', 'positive pregnancy test with pain'],
+          context: {}, guards: ['confirmed intrauterine pregnancy on scan'],
+          action: 'Urgent gynaecology review — transvaginal USS, beta-hCG.'
+        },
+        colorectal_cancer: {
+          condition: 'Colorectal cancer (suspected)', urgency: 'oncological',
+          patterns: ['rectal bleeding', 'change in bowel habit', 'weight loss', 'abdominal mass', 'iron deficiency anaemia', 'dark stools', 'tenesmus', 'mucus per rectum'],
+          context: { ageMin: 45 }, guards: ['known haemorrhoids with no other symptoms'],
+          action: '2WW referral. Colonoscopy or CT colonography per NICE NG12.'
+        },
+        lung_cancer: {
+          condition: 'Lung cancer (suspected)', urgency: 'oncological',
+          patterns: ['haemoptysis', 'cough more than 3 weeks', 'cough over 3 weeks', 'persistent cough', 'recurrent chest infection', 'hoarseness persistent', 'finger clubbing', 'weight loss with cough'],
+          context: { ageMin: 40 }, guards: [],
+          action: 'Urgent CXR. If abnormal: CT thorax and 2WW referral per NICE NG12.'
+        }
+      };
+    }
+
+    evaluate(complaint, age, gender, answers) {
+      if (!complaint) return { emergencyConditions: [], seriousConditions: [], oncologicalConditions: [], matched: [] };
+      const text = complaint.toLowerCase();
+      const results = [];
+
+      for (const [id, cfg] of Object.entries(this.registry)) {
+        const matchedPatterns = cfg.patterns.filter(p => text.includes(p));
+        if (matchedPatterns.length === 0) continue;
+
+        const guardHit = cfg.guards.some(g => text.includes(g));
+        if (guardHit) continue;
+
+        if (cfg.context.ageMin && age != null && parseInt(age) < cfg.context.ageMin) continue;
+        if (cfg.context.pregRequired && !answers?.['pregStatus'] && !text.includes('pregnant')) continue;
+
+        results.push({
+          id,
+          condition: cfg.condition,
+          urgency: cfg.urgency,
+          action: cfg.action,
+          matchedPatterns,
+          patternCount: matchedPatterns.length
+        });
+      }
+
+      const emergency = results.filter(r => r.urgency === 'emergency').sort((a, b) => b.patternCount - a.patternCount);
+      const serious = results.filter(r => r.urgency === 'serious').sort((a, b) => b.patternCount - a.patternCount);
+      const oncological = results.filter(r => r.urgency === 'oncological').sort((a, b) => b.patternCount - a.patternCount);
+      const urgent = results.filter(r => r.urgency === 'urgent').sort((a, b) => b.patternCount - a.patternCount);
+
+      return { emergencyConditions: emergency, seriousConditions: serious, oncologicalConditions: oncological, urgentConditions: urgent, matched: results };
+    }
+  }
+
   global.ReportParser = ReportParser;
   global.ImageAnalyzer = ImageAnalyzer;
   global.DrugInteractionChecker = DrugInteractionChecker;
   global.DrugEtiologyEngine = DrugEtiologyEngine;
   global.ReferralEngine = ReferralEngine;
   global.ClinicalReasoningEngine = ClinicalReasoningEngine;
+  global.HighRiskSafetyNet = HighRiskSafetyNet;
 })(window);
 
   </script>
@@ -3585,7 +3841,7 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
     };
     (function(){try{const k=localStorage.getItem('pgp_apiKey');if(k)state._apiKey=k;const e=localStorage.getItem('pgp_aiEnabled');if(e==='true')state._aiEnabled=true;}catch(e){}})();
 
-    /* ── Online AI functions (Gemini + OpenFDA) ── */
+    /* ── Online AI functions (GitHub Models + OpenFDA) ── */
     async function checkOnlineStatus() {
       try {
         await fetch('https://models.inference.ai.azure.com', {method:'HEAD', signal: AbortSignal.timeout(3000)});
@@ -3855,6 +4111,32 @@ Respond with this exact JSON structure:
       }).join('');
     }
 
+    function renderHighRiskPanel(highRisk) {
+      if (!highRisk) return '';
+      const parts = [];
+      if (highRisk.emergencyConditions?.length) {
+        parts.push(`<div class="high-risk-emergency"><strong>Emergency Conditions To Exclude</strong>` +
+          highRisk.emergencyConditions.map(c => `<div class="high-risk-item"><strong>${esc(c.condition)}</strong><div class="high-risk-action">${esc(c.action)}</div></div>`).join('') +
+          `</div>`);
+      }
+      if (highRisk.urgentConditions?.length) {
+        parts.push(`<div class="high-risk-serious"><strong>Urgent Conditions To Exclude</strong>` +
+          highRisk.urgentConditions.map(c => `<div class="high-risk-item"><strong>${esc(c.condition)}</strong><div class="high-risk-action">${esc(c.action)}</div></div>`).join('') +
+          `</div>`);
+      }
+      if (highRisk.seriousConditions?.length) {
+        parts.push(`<div class="high-risk-serious"><strong>Serious Conditions To Exclude</strong>` +
+          highRisk.seriousConditions.map(c => `<div class="high-risk-item"><strong>${esc(c.condition)}</strong><div class="high-risk-action">${esc(c.action)}</div></div>`).join('') +
+          `</div>`);
+      }
+      if (highRisk.oncologicalConditions?.length) {
+        parts.push(`<div class="high-risk-oncological"><strong>Oncological Conditions To Exclude</strong>` +
+          highRisk.oncologicalConditions.map(c => `<div class="high-risk-item"><strong>${esc(c.condition)}</strong><div class="high-risk-action">${esc(c.action)}</div></div>`).join('') +
+          `</div>`);
+      }
+      return parts.join('');
+    }
+
     function renderReasoning(chain) {
       if (!chain?.length) return '';
       return `<div class="reasoning-panel"><h3 style="margin-bottom:0.65rem;font-size:0.9rem;color:var(--primary)">🧠 AI clinical reasoning</h3>
@@ -4122,8 +4404,8 @@ Respond with this exact JSON structure:
       </div>`;
     }
 
-    async function triggerGeminiDiagnosis() {
-      const aiBtn = document.getElementById('geminiBtn');
+    async function triggerAIDiagnosis() {
+      const aiBtn = document.getElementById('aiDiagBtn');
       const aiContainer = document.getElementById('aiResultContainer');
       if (aiBtn) { aiBtn.disabled = true; aiBtn.textContent = '🧠 Analysing with GitHub Models…'; }
       if (aiContainer) aiContainer.innerHTML = '<p style="color:var(--muted);font-size:0.84rem">Contacting GitHub Models API…</p>';
@@ -4136,6 +4418,94 @@ Respond with this exact JSON structure:
       } finally {
         if (aiBtn) { aiBtn.disabled = false; aiBtn.textContent = '🧠 Get AI-powered second opinion'; }
       }
+    }
+
+    async function evaluateDiagnosisWithAI(state, userDiagnosis) {
+      const systemPrompt = 'You are Dr. Evelyn, a UK GP clinical validator. Evaluate whether the proposed diagnosis is clinically consistent with the patient presentation. Respond with ONLY valid JSON.';
+      const userPrompt = [
+        'Evaluate this proposed diagnosis:',
+        '',
+        `Patient: ${state.age || 'unknown'} year old ${state.gender || 'unknown'}`,
+        `Complaint: "${state.complaint || 'not specified'}" for ${state.duration || 'unknown'} ${state.durationUnit || ''}`,
+        `History: ${JSON.stringify(state.historyAnswers || {})}`,
+        `Medications: ${state.medications || 'none'}`,
+        `Allergies: ${state.allergies || 'NKDA'}`,
+        `Comorbidities: ${[...(state.comorbidities||[]), ...(state.customComorbidities||[])].filter(c=>c!=='None').join(', ') || 'none'}`,
+        `System diagnosis: ${state.analysis?.diagnosis?.primary || 'not available'}`,
+        `System differentials: ${(state.analysis?.diagnosis?.differentials || []).join(', ') || 'none'}`,
+        '',
+        `Proposed diagnosis to evaluate: "${userDiagnosis}"`,
+        '',
+        'Respond with this exact JSON:',
+        JSON.stringify({consistent: true, confidence: 85, reasoning: 'Brief clinical reasoning explaining why this diagnosis is or is not consistent', suggested_investigations: ['test 1', 'test 2']})
+      ].join('\n');
+
+      const res = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + state._apiKey },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+          temperature: 0.2, max_tokens: 1024
+        }),
+        signal: AbortSignal.timeout(20000)
+      });
+      if (!res.ok) { const errText = await res.text(); throw new Error('GitHub Models API error ' + res.status + ': ' + errText.slice(0, 200)); }
+      const data = await res.json();
+      const rawText = (data?.choices?.[0]?.message?.content || '').trim();
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No valid JSON in AI response');
+      return JSON.parse(jsonMatch[0]);
+    }
+
+    async function evaluateMyDiagnosis() {
+      const input = document.getElementById('userDiagnosisInput');
+      const resultContainer = document.getElementById('userDiagnosisResult');
+      const btn = document.getElementById('evalDiagBtn');
+      const userDiagnosis = input?.value?.trim();
+      if (!userDiagnosis) { resultContainer.innerHTML = '<p style="color:var(--danger);font-size:0.84rem">Please enter a diagnosis first.</p>'; return; }
+      btn.disabled = true; btn.textContent = 'Evaluating with GitHub Models…';
+      resultContainer.innerHTML = '<p style="color:var(--muted);font-size:0.84rem">Contacting GitHub Models AI…</p>';
+      try {
+        const result = await evaluateDiagnosisWithAI(state, userDiagnosis);
+        if (result.consistent) {
+          resultContainer.innerHTML = '<div style="background:rgba(45,212,191,0.06);border:1px solid rgba(45,212,191,0.2);border-radius:8px;padding:0.75rem;margin-bottom:0.5rem">' +
+            '<strong style="color:var(--success)">✓ Diagnosis validated</strong>' +
+            '<p style="font-size:0.84rem;color:var(--muted);margin-top:0.3rem">' + esc(result.reasoning) + '</p>' +
+            (result.confidence ? '<p style="font-size:0.82rem;color:var(--muted)">Confidence: ' + result.confidence + '%</p>' : '') +
+            (result.suggested_investigations?.length ? '<p style="font-size:0.82rem;color:var(--muted);margin-top:0.3rem"><strong>Suggested investigations:</strong> ' + result.suggested_investigations.join(', ') + '</p>' : '') +
+            '</div>';
+          registerUserDiagnosis(userDiagnosis, result);
+        } else {
+          resultContainer.innerHTML = '<div style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:8px;padding:0.75rem;margin-bottom:0.5rem">' +
+            '<strong style="color:var(--danger)">✗ Diagnosis not consistent with presentation</strong>' +
+            '<p style="font-size:0.84rem;color:var(--muted);margin-top:0.3rem">' + esc(result.reasoning) + '</p>' +
+            '</div>';
+        }
+      } catch (e) {
+        resultContainer.innerHTML = '<div class="red-flag" style="background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.3);color:var(--danger)"><strong>AI unavailable</strong><br>' + esc(e.message || 'Check your token and internet connection.') + '</div>';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Evaluate My Diagnosis';
+      }
+    }
+
+    function registerUserDiagnosis(diagnosis, aiResult) {
+      const entry = {
+        id: Date.now(),
+        date: new Date().toLocaleString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+        name: state.name || 'Anonymous', age: state.age, gender: state.gender,
+        complaint: state.complaint,
+        diagnosis: diagnosis,
+        confidence: aiResult.confidence || 0,
+        aiValidated: true,
+        aiReasoning: aiResult.reasoning || '',
+        systemDiagnosis: state.analysis?.diagnosis?.primary || '',
+        type: 'user-diagnosis'
+      };
+      let log = JSON.parse(localStorage.getItem('personalGP_log') || '[]');
+      log.unshift(entry);
+      localStorage.setItem('personalGP_log', JSON.stringify(log));
+      updateLogBadge();
     }
 
     async function triggerDrugLookup() {
@@ -4179,7 +4549,7 @@ Respond with this exact JSON structure:
             <h3 style="font-size:1rem;margin-bottom:0.75rem;color:#a78bfa">🧠 AI-powered second opinion</h3>
             <p style="font-size:0.84rem;color:var(--muted);margin-bottom:0.75rem">Send this consultation to GPT-4o-mini (via GitHub Models) for an LLM-generated assessment alongside the local pathway engine.</p>
             <div id="aiResultContainer"></div>
-            <button id="geminiBtn" class="btn-secondary" onclick="triggerGeminiDiagnosis()" style="border-color:#a78bfa;color:#a78bfa">🧠 Get AI-powered second opinion</button>
+            <button id="aiDiagBtn" class="btn-secondary" onclick="triggerAIDiagnosis()" style="border-color:#a78bfa;color:#a78bfa">🧠 Get AI-powered second opinion</button>
           </div>` : '';
       const drugSection = state._aiEnabled && state._apiKey && (state.medications || state.recentMedication)
         ? `<div style="margin-top:0.75rem">
@@ -4198,6 +4568,7 @@ Respond with this exact JSON structure:
           <li><strong>Co-morbidities:</strong><br>${condChips}</li>
           <li><strong>Active pathway:</strong> ${esc(a.pathwayKey.replace(/_/g,' '))} ${pathwayStats}</li>
         </ul>
+        ${renderHighRiskPanel(a.highRisk)}
         ${refHtml}
         <div class="result-panel">
           <h3>🔍 Provisional diagnosis</h3>
@@ -4293,6 +4664,7 @@ Respond with this exact JSON structure:
         ${etiologyHtml}
         ${aiResultHtml}
         ${urgent ? `<div class="red-flag"><strong>🚨 Urgent action required</strong> Contact 1122 (Rescue 1122) — Pakistan emergency ambulance service. Do not rely on this app alone.</div>` : ''}
+        ${renderHighRiskPanel(a.highRisk)}
         ${refHtml}
         <div class="result-panel"><h3>✅ Likely diagnosis</h3>
           <span class="diagnosis-badge">${esc(dx.primary)}</span>
@@ -4301,6 +4673,13 @@ Respond with this exact JSON structure:
         </div>
         <div class="result-panel"><h3>📋 Differentials</h3>
           ${(dx.differentials||[]).map(d => `<span class="diff-badge">${esc(d)}</span>`).join('')}</div>
+        <div class="result-panel">
+          <h3>🔬 Enter your own Diagnosis</h3>
+          <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem">Have a different idea? Type your suspected diagnosis below and the AI will evaluate it against the clinical data.</p>
+          <input type="text" id="userDiagnosisInput" placeholder="e.g. I think this might be polymyalgia rheumatica..." style="width:100%;padding:0.65rem;margin-bottom:0.5rem;border-radius:6px;border:1px solid var(--border);background:var(--surface-1);color:var(--text);font-size:0.88rem;box-sizing:border-box">
+          <div id="userDiagnosisResult" style="margin-bottom:0.5rem"></div>
+          <button id="evalDiagBtn" class="btn-primary" onclick="evaluateMyDiagnosis()" ${state._aiEnabled && state._apiKey ? '' : 'disabled title="Set up AI API key in Step 3 (Background) to enable this feature"'} style="font-size:0.84rem">🔍 Evaluate My Diagnosis</button>
+        </div>
         ${parsedHtml}
         <h2 style="margin-top:1rem">💊 Recommended management</h2>${drugNotes}${medsHtml}
         <div class="safety-net"><strong>🛡️ Safety netting</strong><br>${esc(a.safetyNet)}</div>
