@@ -42,7 +42,7 @@
       gap: 1rem;
       box-shadow: var(--shadow);
     }
-    .header-brand { display: flex; align-items: center; gap: 0.85rem; }
+    .header-brand { display: flex; align-items: center; gap: 0.85rem; cursor: pointer; }
     .doctor-avatar-wrap {
       width: 52px; height: 52px;
       border-radius: 50%;
@@ -377,14 +377,14 @@
 </head>
 <body>
   <header class="app-header">
-    <div class="header-brand">
+    <div class="header-brand" onclick="resetConsult()">
       <div class="doctor-avatar-wrap" id="headerAvatar"></div>
       <div class="header-row">
         <div>
           <h1>Personal GP · <span class="gp-name">Dr. Eve</span></h1>
           <p class="subtitle">Intelligent clinical assistant · NICE CKS–aligned · AI-enhanced · Zero dependencies</p>
         </div>
-        <button class="log-btn" onclick="showPatientLog()" title="View patient log">📋 Log <span class="log-badge" id="logCount">0</span></button>
+        <button class="log-btn" onclick="event.stopPropagation();showPatientLog()" title="View patient log">📋 Patient Log <span class="log-badge" id="logCount">0</span></button>
       </div>
     </div>
   </header>
