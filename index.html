@@ -1633,7 +1633,7 @@ window.GP_PATHWAYS = {
   osteoarthritis: {
     category: 'Musculoskeletal', keywords: ['arthritis', 'osteoarthritis', 'joint pain', 'knee pain', 'hip pain', 'shoulder pain', 'stiff joint', 'crepitus', 'joint stiffness', 'bone on bone', 'wear and tear', 'arthritic', 'painful joint', 'aching joint', 'stiffness', 'joint problem', 'joint ache', 'joints hurt', 'wrist pain', 'wrist', 'hand pain', 'finger pain', 'elbow pain'],
     questions: [
-      { id: 'joint', text: 'Which joint?', type: 'radio', options: ['Knee', 'Hip', 'Hand/fingers', 'Shoulder', 'Multiple joints', 'Other'] },
+      { id: 'joint', text: 'Which joint?', type: 'radio', options: ['Knee', 'Hip', 'Wrist', 'Hand/fingers', 'Shoulder', 'Multiple joints', 'Other'] },
       { id: 'pattern', text: 'Pain pattern?', type: 'radio', options: ['Worse with activity, better at rest', 'Worse at night/at rest', 'Constant'] },
       { id: 'swell', text: 'Joint swelling or warmth?', type: 'radio', options: ['No', 'Mild swelling', 'Hot and swollen'] },
       { id: 'morning', text: 'Morning stiffness?', type: 'radio', options: ['<30 minutes', '>30 minutes', 'None'] },
@@ -4228,7 +4228,7 @@ Respond with this exact JSON structure:
         <div class="row">
           <div class="form-group"><label>Duration</label><input type="number" id="duration" min="1" value="${esc(state.duration)}" placeholder="Number"></div>
           <div class="form-group"><label>Unit</label><select id="durationUnit">
-            ${['hours','days','weeks','months'].map(u => `<option value="${u}" ${state.durationUnit===u?'selected':''}>${u}</option>`).join('')}
+            ${['hours','days','weeks','months','years'].map(u => `<option value="${u}" ${state.durationUnit===u?'selected':''}>${u}</option>`).join('')}
           </select></div>
         </div>
         <div class="btn-row"><button class="btn-secondary" onclick="prevStep()">← Back</button><button class="btn-primary" onclick="saveComplaint()">Continue →</button></div>
