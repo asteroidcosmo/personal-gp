@@ -3607,8 +3607,10 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
     }
     function applyAiKey() {
       saveAiSettings();
-      const btn = document.querySelector('details .btn-primary');
-      if (btn) { btn.textContent = 'Applied ✓'; btn.disabled = true; setTimeout(() => { btn.textContent = 'Apply'; btn.disabled = false; }, 2000); }
+      const applyBtn = document.getElementById('applyBtn');
+      const reapplyBtn = document.getElementById('reapplyBtn');
+      if (applyBtn) { applyBtn.textContent = 'Applied ✓'; applyBtn.disabled = true; }
+      if (reapplyBtn) reapplyBtn.style.display = 'block';
     }
 
     async function diagnoseWithGitHubModels(state) {
@@ -3873,6 +3875,7 @@ Respond with this exact JSON structure:
       const onlineClass = navigator.onLine ? 'badge-online' : 'badge-offline';
       const onlineText = navigator.onLine ? '🌐 Online' : '🔌 Offline';
       const aiChecked = state._aiEnabled ? 'checked' : '';
+      const hasKey = !!state._apiKey;
       return `<div class="card">
         ${gpMessage(`Hello! I'm ${GP_NAME}, your Personal GP assistant. I'll guide you through a structured consultation — check your photos for basic visible patterns, analyse lab reports, and suggest investigations and a management plan based on NICE CKS guidelines.`)}
         <div class="disclaimer"><strong>⚠️ Important medical disclaimer</strong>
@@ -3897,7 +3900,10 @@ Respond with this exact JSON structure:
               <span>Enable AI-powered diagnosis alongside local pathways</span>
             </label>
             <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">Adds LLM-based differentials, red flag analysis, and management suggestions.</p></div>
-            <button class="btn-primary" onclick="applyAiKey()" style="width:100%;padding:0.7rem">Apply</button>
+            <div style="display:flex;gap:0.5rem">
+              <button class="btn-primary" id="applyBtn" onclick="applyAiKey()" style="flex:1;padding:0.7rem" ${hasKey ? 'disabled' : ''}>${hasKey ? 'Applied ✓' : 'Apply'}</button>
+              <button class="btn-secondary" id="reapplyBtn" onclick="applyAiKey()" style="flex:1;padding:0.7rem;${hasKey ? '' : 'display:none'}">Re-apply</button>
+            </div>
           </div>
         </details>
         <div class="btn-row"><button class="btn-primary" onclick="nextStep()">Begin consultation →</button></div>
