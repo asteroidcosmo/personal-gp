@@ -3609,8 +3609,6 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
       saveAiSettings();
       const btn = document.querySelector('details .btn-primary');
       if (btn) { btn.textContent = 'Applied ✓'; btn.disabled = true; setTimeout(() => { btn.textContent = 'Apply'; btn.disabled = false; }, 2000); }
-      const details = document.querySelector('details');
-      if (details) details.open = false;
     }
 
     async function diagnoseWithGitHubModels(state) {
