@@ -3603,6 +3603,11 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
       if (aiEl) state._aiEnabled = aiEl.checked;
       try { localStorage.setItem('pgp_apiKey', state._apiKey); localStorage.setItem('pgp_aiEnabled', state._aiEnabled ? 'true' : ''); } catch(e) {}
     }
+    function applyAiKey() {
+      saveAiSettings();
+      const details = document.querySelector('details');
+      if (details) details.open = false;
+    }
 
     async function diagnoseWithGitHubModels(state) {
       const systemPrompt = `You are Dr. Evelyn, a UK GP providing a structured medical assessment for MRCGP-level clinical reasoning. Always respond with ONLY valid JSON — no markdown, no code fences, no extra text.`;
@@ -3882,17 +3887,20 @@ Respond with this exact JSON structure:
         <details style="margin-bottom:1rem;background:var(--surface-2);border-radius:10px;padding:0.5rem 0.75rem;border:1px solid var(--border)">
           <summary style="cursor:pointer;font-weight:600;color:var(--primary);font-size:0.88rem">🧠 AI Enhancement Settings</summary>
           <div style="margin-top:0.75rem">
-            <div class="form-group"><label>GitHub Token <span class="optional">(free — github.com/settings/tokens)</span></label>
-              <input type="password" id="aiApiKey" placeholder="Paste your GitHub token (ghp_...)" value="${esc(state._apiKey)}" style="font-family:monospace">
-              <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">🔒 Stored locally in your browser only. Create a classic token with <code>repo</code> scope at github.com/settings/tokens.</p></div>
+            <div class="form-group"><label>Enter Authorized Key</label>
+              <div style="display:flex;gap:0.5rem;align-items:center">
+                <input type="password" id="aiApiKey" placeholder="Paste your authorized key" value="${esc(state._apiKey)}" style="font-family:monospace;flex:1">
+                <button class="btn-primary" onclick="applyAiKey()" style="padding:0.7rem 1rem;white-space:nowrap">Apply</button>
+              </div>
+              <p style="font-size:0.75rem;color:var(--warning);margin-top:0.3rem">🔒 Don't share your key with anyone, it's your personal key.</p></div>
             <div class="form-group"><label class="toggle-row">
               <input type="checkbox" id="aiEnabled" ${aiChecked} style="width:auto;margin-right:0.5rem">
-              <span>Enable AI-powered diagnosis (GitHub Models) alongside local pathways</span>
+              <span>Enable AI-powered diagnosis alongside local pathways</span>
             </label>
-            <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3px">Uses GPT-4o-mini via GitHub Models for differentials, red flag analysis, and management suggestions.</p></div>
+            <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">Adds LLM-based differentials, red flag analysis, and management suggestions.</p></div>
           </div>
         </details>
-        <div class="btn-row"><button class="btn-primary" onclick="saveAiSettings();nextStep()">Begin consultation →</button></div>
+        <div class="btn-row"><button class="btn-primary" onclick="nextStep()">Begin consultation →</button></div>
       </div>`;
     }
 
