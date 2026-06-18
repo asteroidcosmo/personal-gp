@@ -144,12 +144,19 @@
       font-weight: 400; cursor: pointer; color: var(--text); font-size: 0.9rem;
     }
     .btn-row { display: flex; gap: 0.65rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    .toggle-row { display:flex; align-items:center; gap:0.5rem; cursor:pointer; }
+    .toggle-row input[type="checkbox"] { width:18px;height:18px;cursor:pointer; }
+    .badge-online { background:rgba(52,211,153,0.12);border-color:rgba(52,211,153,0.4);color:#34d399; }
+    .badge-offline { background:rgba(248,113,113,0.10);border-color:rgba(248,113,113,0.3);color:#f87171; }
+    details summary { user-select:none; }
+    details summary::-webkit-details-marker { color:var(--primary); }
     button {
       padding: 0.75rem 1.35rem; border: none; border-radius: 10px;
       font-size: 0.92rem; font-weight: 600; cursor: pointer; font-family: inherit;
       transition: transform 0.1s, box-shadow 0.2s;
     }
     button:active { transform: scale(0.98); }
+    button:disabled { opacity:0.5; cursor:not-allowed; transform:none !important; }
     .btn-primary {
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: #0f1419;
@@ -3572,8 +3579,98 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
       complaintImage: null, complaintImageUrl: null, imageAnalysis: null,
       recommendedTests: [], uploadedTests: {}, manualLabs: {},
       reportFiles: [], pastedReportText: '', parsedReports: [],
-      analysis: null, _showAddCustom: false, _savedToLog: false
+      analysis: null, aiResult: null, _showAddCustom: false, _savedToLog: false, _apiKey: '', _aiEnabled: false
     };
+    (function(){try{const k=localStorage.getItem('pgp_apiKey');if(k)state._apiKey=k;const e=localStorage.getItem('pgp_aiEnabled');if(e==='true')state._aiEnabled=true;}catch(e){}})();
+
+    /* ── Online AI functions (Gemini + OpenFDA) ── */
+    async function checkOnlineStatus() {
+      try {
+        const c = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=test', {method:'HEAD', signal: AbortSignal.timeout(3000)});
+        return true;
+      } catch(e) {
+        try {
+          const c = await fetch('https://api.fda.gov/drug/event.json?limit=1', {method:'HEAD', signal: AbortSignal.timeout(3000)});
+          return true;
+        } catch(e2) { return false; }
+      }
+    }
+
+    function saveAiSettings() {
+      const keyEl = document.getElementById('aiApiKey');
+      const aiEl = document.getElementById('aiEnabled');
+      if (keyEl) state._apiKey = keyEl.value.trim();
+      if (aiEl) state._aiEnabled = aiEl.checked;
+      try { localStorage.setItem('pgp_apiKey', state._apiKey); localStorage.setItem('pgp_aiEnabled', state._aiEnabled ? 'true' : ''); } catch(e) {}
+    }
+
+    async function diagnoseWithGemini(state) {
+      const prompt = `You are Dr. Evelyn, a UK GP providing a structured medical assessment for MRCGP-level clinical reasoning. Respond with ONLY valid JSON — no markdown, no code fences, no extra text.
+
+Patient: ${state.age || 'unknown'} year old ${state.gender || 'unknown'}
+Complaint: "${state.complaint || 'not specified'}" for ${state.duration || 'unknown'} ${state.durationUnit || ''}
+Medications: ${state.medications || 'none'}
+Recent medication changes: ${state.recentMedication || 'none'} (${state.recentMedicationDays || 'N/A'} days ago)
+Allergies: ${state.allergies || 'NKDA'}
+Smoking: ${state.smoking || 'not specified'} | Alcohol: ${state.alcohol || 'not specified'}
+Pregnancy: ${state.pregStatus || 'N/A'} | Occupation: ${state.occupation || 'N/A'}
+Family history: ${state.familyHistory || 'not specified'}
+Comorbidities: ${[...(state.comorbidities||[]), ...(state.customComorbidities||[])].filter(c=>c!=='None').join(', ') || 'none'}
+History details: ${JSON.stringify(state.historyAnswers || {})}
+
+Respond with this exact JSON structure:
+{
+  "primary": "diagnosis name",
+  "confidence": 85,
+  "differentials": ["alternative diagnosis 1", "alternative diagnosis 2", "alternative diagnosis 3"],
+  "red_flags": ["red flag 1", "red flag 2"],
+  "investigations": ["test 1", "test 2"],
+  "management": "Brief management plan summary",
+  "urgency": "emergency/urgent/routine",
+  "guideline": "NICE CKS guideline reference"
+}`;
+
+      try {
+        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + state._apiKey, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.2, maxOutputTokens: 1024, topP: 0.8 }
+          }),
+          signal: AbortSignal.timeout(15000)
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error('Gemini API error ' + res.status + ': ' + errText.slice(0, 200));
+        }
+        const data = await res.json();
+        const rawText = (data?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('No JSON found in Gemini response');
+        return JSON.parse(jsonMatch[0]);
+      } catch (e) {
+        console.error('Gemini diagnosis failed:', e);
+        throw e;
+      }
+    }
+
+    async function lookupDrugOpenFDA(drugName) {
+      try {
+        const res = await fetch('https://api.fda.gov/drug/label.json?search=openfda.brand_name:"' + encodeURIComponent(drugName) + '"+AND+openfda.generic_name:*&limit=1', { signal: AbortSignal.timeout(5000) });
+        if (!res.ok) return null;
+        const data = await res.json();
+        const r = data?.results?.[0];
+        if (!r) return null;
+        return {
+          name: (r.openfda?.brand_name?.[0] || r.openfda?.generic_name?.[0] || drugName),
+          purpose: (r.purpose || []).join('; '),
+          warnings: (r.warnings || []).slice(0, 2).join(' | '),
+          interactions: (r.drug_interactions || []).slice(0, 2).join(' | '),
+          adverse: (r.adverse_reactions || []).slice(0, 2).join(' | ')
+        };
+      } catch (e) { return null; }
+    }
 
     /* ── Comprehensive MRCGP/Curriculum-aligned comorbidities (categorized) ──
        Categories follow the RCGP curriculum specialty domains.
@@ -3757,6 +3854,9 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
     }
 
     function renderWelcome() {
+      const onlineClass = navigator.onLine ? 'badge-online' : 'badge-offline';
+      const onlineText = navigator.onLine ? '🌐 Online' : '🔌 Offline';
+      const aiChecked = state._aiEnabled ? 'checked' : '';
       return `<div class="card">
         ${gpMessage(`Hello! I'm ${GP_NAME}, your Personal GP assistant. I'll guide you through a structured consultation — check your photos for basic visible patterns, analyse lab reports, and suggest investigations and a management plan based on NICE CKS guidelines.`)}
         <div class="disclaimer"><strong>⚠️ Important medical disclaimer</strong>
@@ -3766,13 +3866,24 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
         <p style="color:var(--muted);font-size:0.92rem;margin-bottom:1rem">Structured consultation: your details → complaint → optional photo → history → background → AI review → investigations → final assessment.</p>
         <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.1rem;font-size:0.78rem">
           <span style="background:rgba(45,212,191,0.10);border:1px solid rgba(45,212,191,0.3);color:var(--primary);padding:0.3rem 0.65rem;border-radius:999px">📦 Single file</span>
-          <span style="background:rgba(45,212,191,0.10);border:1px solid rgba(45,212,191,0.3);color:var(--primary);padding:0.3rem 0.65rem;border-radius:999px">🔌 Fully offline</span>
+          <span class="${onlineClass}" style="padding:0.3rem 0.65rem;border-radius:999px;border:1px solid">${onlineText}</span>
           <span style="background:rgba(45,212,191,0.10);border:1px solid rgba(45,212,191,0.3);color:var(--primary);padding:0.3rem 0.65rem;border-radius:999px">🚫 No install</span>
-          <span style="background:rgba(45,212,191,0.10);border:1px solid rgba(45,212,191,0.3);color:var(--primary);padding:0.3rem 0.65rem;border-radius:999px">🛡️ No data sent anywhere</span>
           <span style="background:rgba(45,212,191,0.10);border:1px solid rgba(45,212,191,0.3);color:var(--primary);padding:0.3rem 0.65rem;border-radius:999px">💾 Runs from USB / email</span>
         </div>
-        <p style="color:var(--muted);font-size:0.82rem;margin-bottom:0.5rem">Runs on Windows, macOS, Linux — any modern browser (Chrome / Edge / Firefox / Safari). Double-click the file or use the "Launch Personal GP" shortcut on your desktop.</p>
-        <div class="btn-row"><button class="btn-primary" onclick="nextStep()">Begin consultation →</button></div>
+        <details style="margin-bottom:1rem;background:var(--surface-2);border-radius:10px;padding:0.5rem 0.75rem;border:1px solid var(--border)">
+          <summary style="cursor:pointer;font-weight:600;color:var(--primary);font-size:0.88rem">🧠 AI Enhancement Settings</summary>
+          <div style="margin-top:0.75rem">
+            <div class="form-group"><label>Gemini API Key <span class="optional">(free from aistudio.google.com)</span></label>
+              <input type="password" id="aiApiKey" placeholder="Paste your Gemini API key" value="${esc(state._apiKey)}" style="font-family:monospace">
+              <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">🔒 Stored locally in your browser only. Never sent anywhere except Google's Gemini API.</p></div>
+            <div class="form-group"><label class="toggle-row">
+              <input type="checkbox" id="aiEnabled" ${aiChecked} style="width:auto;margin-right:0.5rem">
+              <span>Enable AI-powered diagnosis (Gemini) alongside local pathways</span>
+            </label>
+            <p style="font-size:0.75rem;color:var(--muted);margin-top:0.3rem">Adds LLM-based differentials, red flag analysis, and management suggestions to the standard assessment.</p></div>
+          </div>
+        </details>
+        <div class="btn-row"><button class="btn-primary" onclick="saveAiSettings();nextStep()">Begin consultation →</button></div>
       </div>`;
     }
 
@@ -3960,6 +4071,64 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
       </div>`;
     }
 
+    function renderAiResult(r) {
+      if (!r) return '';
+      const urgClass = (r.urgency||'routine').toLowerCase().replace(/\s+/g,'-');
+      const urgColor = urgClass === 'emergency' ? 'var(--danger)' : urgClass === 'urgent' ? 'var(--warning)' : 'var(--success)';
+      return `<div class="result-panel ai-panel" style="border-left:3px solid #a78bfa;background:rgba(167,139,250,0.06)">
+        <h3 style="color:#a78bfa">🧠 Gemini AI-powered assessment</h3>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Generated by Google Gemini — always verify against clinical judgment.</p>
+        <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:0.75rem;flex-wrap:wrap">
+          <span class="diagnosis-badge" style="background:rgba(167,139,250,0.15);color:#c4b5fd">${esc(r.primary)}</span>
+          <span style="font-size:0.85rem;color:${urgColor};font-weight:600">${esc(r.urgency||'Routine')}</span>
+          <span style="font-size:0.82rem;color:var(--muted)">Confidence: ${r.confidence || 'N/A'}%</span>
+        </div>
+        ${r.red_flags?.length ? `<div style="margin-bottom:0.75rem"><strong style="color:var(--danger);font-size:0.84rem">🚩 Red flags</strong><ul style="margin:0.3rem 0 0 1.2rem;font-size:0.84rem;color:var(--danger)">${r.red_flags.map(f => `<li>${esc(f)}</li>`).join('')}</ul></div>` : ''}
+        ${r.differentials?.length ? `<div style="margin-bottom:0.75rem"><strong style="font-size:0.84rem">Differentials</strong><div style="margin-top:0.3rem">${r.differentials.map(d => `<span class="diff-badge">${esc(d)}</span>`).join('')}</div></div>` : ''}
+        ${r.investigations?.length ? `<div style="margin-bottom:0.75rem"><strong style="font-size:0.84rem">Recommended investigations</strong><ul style="margin:0.3rem 0 0 1.2rem;font-size:0.84rem;color:var(--muted)">${r.investigations.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}
+        ${r.management ? `<div style="margin-bottom:0.75rem"><strong style="font-size:0.84rem">Management</strong><p style="font-size:0.84rem;color:var(--muted);margin-top:0.3rem">${esc(r.management)}</p></div>` : ''}
+        ${r.guideline ? `<p style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem">📚 ${esc(r.guideline)}</p>` : ''}
+      </div>`;
+    }
+
+    async function triggerGeminiDiagnosis() {
+      const aiBtn = document.getElementById('geminiBtn');
+      const aiContainer = document.getElementById('aiResultContainer');
+      if (aiBtn) { aiBtn.disabled = true; aiBtn.textContent = '🧠 Analysing with Gemini…'; }
+      if (aiContainer) aiContainer.innerHTML = '<p style="color:var(--muted);font-size:0.84rem">Contacting Gemini AI…</p>';
+      try {
+        const result = await diagnoseWithGemini(state);
+        state.aiResult = result;
+        if (aiContainer) aiContainer.innerHTML = renderAiResult(result);
+      } catch (e) {
+        if (aiContainer) aiContainer.innerHTML = `<div class="red-flag" style="background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.3);color:var(--danger)"><strong>Gemini AI unavailable</strong><br>${esc(e.message || 'Check your API key and internet connection.')}</div>`;
+      } finally {
+        if (aiBtn) { aiBtn.disabled = false; aiBtn.textContent = '🧠 Get AI-powered second opinion'; }
+      }
+    }
+
+    async function triggerDrugLookup() {
+      const container = document.getElementById('drugLookupContainer');
+      if (!container) return;
+      const medText = state.medications || '';
+      if (!medText) { container.innerHTML = '<p style="color:var(--muted);font-size:0.84rem">No medications entered.</p>'; return; }
+      container.innerHTML = '<p style="color:var(--muted);font-size:0.84rem">Looking up drugs on OpenFDA…</p>';
+      const drugNames = medText.split(/[,;]+/).map(s => s.trim().split(/\s+/)[0]).filter(Boolean);
+      const results = [];
+      for (const name of drugNames.slice(0, 5)) {
+        const info = await lookupDrugOpenFDA(name);
+        if (info) results.push(info);
+      }
+      if (results.length) {
+        container.innerHTML = `<div style="background:rgba(45,212,191,0.06);border-left:3px solid var(--primary);padding:0.75rem;border-radius:8px;margin-top:0.5rem">
+          <h4 style="font-size:0.84rem;color:var(--primary);margin-bottom:0.5rem">💊 Live drug info (OpenFDA)</h4>
+          ${results.map(r => `<div style="margin-bottom:0.5rem;font-size:0.82rem"><strong>${esc(r.name)}</strong>${r.purpose ? '<br>Purpose: ' + esc(r.purpose) : ''}${r.warnings ? '<br><span style="color:var(--warning)">⚠️ ' + esc(r.warnings) + '</span>' : ''}${r.interactions ? '<br><span style="color:var(--danger)">⚠️ ' + esc(r.interactions) + '</span>' : ''}</div>`).join('')}
+        </div>`;
+      } else {
+        container.innerHTML = '<p style="color:var(--muted);font-size:0.82rem">No drug data found on OpenFDA.</p>';
+      }
+    }
+
     async function renderReviewAsync() {
       const a = await runAnalysis();
       const dx = a.diagnosis;
@@ -3974,6 +4143,18 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
         ${state.imageAnalysis ? '<span class="pathway-stat">📷 Image analysed</span>' : ''}
         ${state.parsedReports.length ? `<span class="pathway-stat">📄 ${state.parsedReports.length} report(s)</span>` : ''}
       </div>`;
+      const aiSection = state._aiEnabled && state._apiKey
+        ? `<div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)">
+            <h3 style="font-size:1rem;margin-bottom:0.75rem;color:#a78bfa">🧠 AI-powered second opinion</h3>
+            <p style="font-size:0.84rem;color:var(--muted);margin-bottom:0.75rem">Send this consultation to Gemini for an LLM-generated assessment alongside the local pathway engine.</p>
+            <div id="aiResultContainer"></div>
+            <button id="geminiBtn" class="btn-secondary" onclick="triggerGeminiDiagnosis()" style="border-color:#a78bfa;color:#a78bfa">🧠 Get AI-powered second opinion</button>
+          </div>` : '';
+      const drugSection = state._aiEnabled && state._apiKey && (state.medications || state.recentMedication)
+        ? `<div style="margin-top:0.75rem">
+            <button class="btn-secondary" onclick="triggerDrugLookup()" style="font-size:0.84rem">💊 Look up medications on OpenFDA</button>
+            <div id="drugLookupContainer"></div>
+          </div>` : '';
       document.getElementById('stepContainer').innerHTML = `<div class="card">
         <div class="step-label">Step 6 · AI review</div>
         ${gpMessage(`Thank you${state.name ? ', ' + esc(state.name.split(' ')[0]) : ''}. Based on your history${state.imageAnalysis ? ', photo analysis,' : ''} and MRCGP clinical pathways, here is my working assessment.`)}
@@ -3998,6 +4179,8 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
         <h2 style="margin-top:1rem">Recommended investigations</h2>
         <p style="font-size:0.84rem;color:var(--muted);margin-bottom:0.75rem">Upload results on the next step if available.</p>
         <ul class="summary-list">${a.tests.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+        ${aiSection}
+        ${drugSection}
         <div class="btn-row"><button class="btn-secondary" onclick="prevStep()">← Back</button><button class="btn-primary" onclick="nextStep()">Proceed to investigations →</button></div>
       </div>`;
       attachListeners();
@@ -4069,6 +4252,7 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
 
       const refHtml = renderReferrals(a.referrals);
       const urgent = dx.urgent;
+      const aiResultHtml = state.aiResult ? renderAiResult(state.aiResult) : '';
 
       saveToPatientLog();
       document.getElementById('stepContainer').innerHTML = `<div class="card">
@@ -4076,6 +4260,7 @@ const DR_EVELYN_IMG = '<svg class="doctor-avatar" viewBox="0 0 100 100" xmlns="h
         ${gpMessage(`Here is my assessment and management plan${state.name ? ', ' + esc(state.name.split(' ')[0]) : ''}. I've correlated your history, ${state.imageAnalysis ? 'photo analysis, ' : ''}and any reports you've shared.`)}
         ${renderReasoning(a.reasoningChain)}
         ${etiologyHtml}
+        ${aiResultHtml}
         ${urgent ? `<div class="red-flag"><strong>🚨 Urgent action required</strong> Contact 1122 (Rescue 1122) — Pakistan emergency ambulance service. Do not rely on this app alone.</div>` : ''}
         ${refHtml}
         <div class="result-panel"><h3>✅ Likely diagnosis</h3>
